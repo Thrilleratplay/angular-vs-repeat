@@ -53,6 +53,7 @@
 	// vs-size-property - a property name of the items in collection that is a number denoting the element size (in pixels)
 	// vs-autoresize - use this attribute without vs-size-property and without specifying element's size. The automatically computed element style will
 	//				readjust upon window resize if the size is dependable on the viewport size
+	// vs-initial-element="" - an element index to set scrollTop
 
 	// EVENTS:
 	// - 'vsRepeatTrigger' - an event the directive listens for to manually trigger reinitialization
