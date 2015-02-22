@@ -139,6 +139,19 @@
 						$scope.offsetAfter = 0;
 						$scope.excess = 2;
 
+						$scope.$watch($attrs.vsInitialElement, function(elementIndex){
+							$scope.goTo(elementIndex);
+						});
+						
+						$scope.goTo = function(index){
+							$scope.$$postDigest(function(){
+								var scrollPosition = (sizesPropertyExists) ? 
+									($scope.sizesCumulative[index] + $scope.offsetBefore):
+									(index * $scope.elementSize + $scope.offsetBefore);
+								$scrollParent[0].scrollTop = scrollPosition;
+							});
+						};
+
 						Object.keys(attributesDictionary).forEach(function(key){
 							if($attrs[key]){
 								$attrs.$observe(key, function(value){
