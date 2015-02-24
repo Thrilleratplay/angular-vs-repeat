@@ -322,4 +322,34 @@
 			done();
 		});
 	});
+
+	it('should call on-vs-index-last when the last index is reached change and on-vs-index-first when returned to the first index', function() {
+		$element = $compile([
+			'<div vs-repeat class="container" on-vs-index-last="reachedLastItem()" on-vs-index-first="reachedFirstItem()">',
+			'  <div ng-repeat="foo in bar" class="item">',
+			'    <span class="value">{{foo.value}}</span>',
+			'  </div>',
+			'</div>'
+		].join(''))($scope);
+		angular.element(document.body).append($element);
+		$scope.bar = getArray(100);
+		$scope.$digest();
+
+		var endReached, beginingReached;
+		$scope.reachedLastItem = function() {
+			endReached = true;
+		};
+
+		$scope.reachedFirstItem = function() {
+			beginingReached = true;
+		};
+
+		$element[0].scrollTop += 1800;
+		$element.triggerHandler('scroll');
+		expect(endReached).to.be(true);
+
+		$element[0].scrollTop = 0;
+		$element.triggerHandler('scroll');
+		expect(beginingReached).to.be(true);
+	});
 })();

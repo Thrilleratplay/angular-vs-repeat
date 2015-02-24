@@ -83,7 +83,7 @@
 			return angular.element();
 	};
 
-	angular.module('vs-repeat', []).directive('vsRepeat', ['$compile', function($compile){
+	angular.module('vs-repeat', []).directive('vsRepeat', ['$compile', '$parse', function($compile, $parse){
 		return {
 			restrict: 'A',
 			scope: true,
@@ -124,6 +124,8 @@
 							$scrollParent = $attrs.vsScrollParent ? closestElement.call($element, $attrs.vsScrollParent) : $element,
 							positioningPropertyTransform = $$horizontal ? 'translateX' : 'translateY',
 							positioningProperty = $$horizontal ? 'left' : 'top',
+							onVsIndexFirstFn,
+							onVsIndexLastFn,
 
 							clientSize =  $$horizontal ? 'clientWidth' : 'clientHeight',
 							offsetSize =  $$horizontal ? 'offsetWidth' : 'offsetHeight',
@@ -152,6 +154,24 @@
 								$scrollParent[0].scrollTop = scrollPosition;
 							});
 						};
+
+						if (!!$attrs.onVsIndexFirst) {
+							onVsIndexFirstFn = $parse($attrs.onVsIndexFirst);
+							$scope.$watch('startIndex', function() {
+								if ($scope.startIndex === 0) {
+									onVsIndexFirstFn($scope);
+								}
+							});
+						}
+
+						if (!!$attrs.onVsIndexLast) {
+							onVsIndexLastFn = $parse($attrs.onVsIndexLast);
+							$scope.$watch('endIndex', function() {
+								if ($scope.endIndex >= originalLength - 1) {
+									onVsIndexLastFn($scope);
+								}
+							});
+						}
 
 						Object.keys(attributesDictionary).forEach(function(key){
 							if($attrs[key]){
