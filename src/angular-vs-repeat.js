@@ -53,6 +53,7 @@
 	// vs-size-property - a property name of the items in collection that is a number denoting the element size (in pixels)
 	// vs-autoresize - use this attribute without vs-size-property and without specifying element's size. The automatically computed element style will
 	//				readjust upon window resize if the size is dependable on the viewport size
+	// vs-initial-element="" - an element index to set scrollTop
 
 	// EVENTS:
 	// - 'vsRepeatTrigger' - an event the directive listens for to manually trigger reinitialization
@@ -82,7 +83,7 @@
 			return angular.element();
 	};
 
-	angular.module('vs-repeat', []).directive('vsRepeat', ['$compile', function($compile){
+	angular.module('vs-repeat', []).directive('vsRepeat', ['$compile', '$parse', function($compile, $parse){
 		return {
 			restrict: 'A',
 			scope: true,
@@ -123,6 +124,8 @@
 							$scrollParent = $attrs.vsScrollParent ? closestElement.call($element, $attrs.vsScrollParent) : $element,
 							positioningPropertyTransform = $$horizontal ? 'translateX' : 'translateY',
 							positioningProperty = $$horizontal ? 'left' : 'top',
+							onVsIndexFirstFn,
+							onVsIndexLastFn,
 
 							clientSize =  $$horizontal ? 'clientWidth' : 'clientHeight',
 							offsetSize =  $$horizontal ? 'offsetWidth' : 'offsetHeight',
@@ -138,6 +141,37 @@
 						$scope.offsetBefore = 0;
 						$scope.offsetAfter = 0;
 						$scope.excess = 2;
+
+						$scope.$watch($attrs.vsInitialElement, function(elementIndex){
+							$scope.goTo(elementIndex);
+						});
+						
+						$scope.goTo = function(index){
+							$scope.$$postDigest(function(){
+								var scrollPosition = (sizesPropertyExists) ? 
+									($scope.sizesCumulative[index] + $scope.offsetBefore):
+									(index * $scope.elementSize + $scope.offsetBefore);
+								$scrollParent[0].scrollTop = scrollPosition;
+							});
+						};
+
+						if (!!$attrs.onVsIndexFirst) {
+							onVsIndexFirstFn = $parse($attrs.onVsIndexFirst);
+							$scope.$watch('startIndex', function() {
+								if ($scope.startIndex === 0) {
+									onVsIndexFirstFn($scope);
+								}
+							});
+						}
+
+						if (!!$attrs.onVsIndexLast) {
+							onVsIndexLastFn = $parse($attrs.onVsIndexLast);
+							$scope.$watch('endIndex', function() {
+								if ($scope.endIndex >= originalLength - 1) {
+									onVsIndexLastFn($scope);
+								}
+							});
+						}
 
 						Object.keys(attributesDictionary).forEach(function(key){
 							if($attrs[key]){
